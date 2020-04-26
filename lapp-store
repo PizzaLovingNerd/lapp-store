@@ -1,8 +1,24 @@
 #!/usr/bin/env python3
 
+#####################################
+# This python program is very long. #
+# To find a certain section,        #
+# hit CTRL-F and type "find"		#
+# and then type one of the sections	#
+# example: "findHeaderBar"			#
+#									#
+# Here are the sections:			#
+# HeaderBar							#
+# GtkListGen						#
+# MainStackSetup					#
+#									#
+#####################################
+
 import gi
 gi.require_version('Gtk', '3.0')
+gi.require_version('Handy', '0.0')
 from gi.repository import Gtk
+from gi.repository import Handy
 from gi.repository import Gio
 from gi.repository.GdkPixbuf import Pixbuf
 import os
@@ -38,24 +54,31 @@ class lapp(Gtk.Window):
 			if ListBox.get_index() == 6: Stack.set_visible_child_name("systemPage")
 			if ListBox.get_index() == 7: Stack.set_visible_child_name("webappsPage")
 
-
 		# Generating Window
 		Gtk.Window.__init__(self, title="Lapp Store")
 		self.set_default_size(360, 412)
 		self.set_resizable(True)
-		self.set_border_width(10)
+		# self.set_border_width(10)
+
+		##############
+		# fHeaderBar #
+		##############
 
 		self.headerBar = Gtk.HeaderBar()
 		self.headerBar.set_show_close_button(False) # Adds Close Button (and Minimize Button)
 		self.set_titlebar(self.headerBar) # Sets this HeaderBar as the titlebar
 		
-		self.backButton = Gtk.Button.new_from_icon_name("back", Gtk.IconSize.BUTTON)
+		self.backButton = Gtk.Button.new_from_icon_name("go-previous-symbolic", Gtk.IconSize.BUTTON)
 		self.backButton.set_sensitive(False)
 		self.headerBar.pack_start(self.backButton)
 
 		self.mainStack = Gtk.Stack()
 		self.mainStack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
 		self.mainStack.set_transition_duration(250)
+
+		##################
+		# findGtkListGen #
+		##################
 
 		self.homeList = Gtk.ListBox()
 		self.catagoryList = Gtk.ListBox()
@@ -66,6 +89,10 @@ class lapp(Gtk.Window):
 		self.catagoryStack = Gtk.Stack()
 		self.catagoryStack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
 		self.catagoryStack.set_transition_duration(250)
+
+		###################
+		# findCatagoryGen #
+		###################
 
 		self.catagoryList = Gtk.ListBox()
 		self.catagoryList.set_selection_mode(Gtk.SelectionMode.NONE)
@@ -109,6 +136,12 @@ class lapp(Gtk.Window):
 		self.educationScroll = Gtk.ScrolledWindow()
 		self.educationScroll.add(self.educationList)
 		self.catagoryStack.add_titled(self.educationScroll, "educationPage", "Education")
+
+		self.otherList = Gtk.ListBox()
+		self.otherList.set_selection_mode(Gtk.SelectionMode.NONE)
+		self.otherScroll = Gtk.ScrolledWindow()
+		self.otherScroll.add(self.otherList)
+		self.catagoryStack.add_titled(self.otherScroll, "otherPage", "Education")
 
 		self.systemList = Gtk.ListBox()
 		self.systemList.set_selection_mode(Gtk.SelectionMode.NONE)
@@ -176,6 +209,15 @@ class lapp(Gtk.Window):
 		self.educationRow.add(self.educationLabel)
 		self.catagoryList.add(self.educationRow)
 
+		self.otherRow = Gtk.ListBoxRow()
+		self.otherBox = Gtk.Box(spacing=1)
+		self.otherLabel = Gtk.Label()
+		self.otherLabel.set_markup("<b>Other</b>")
+		self.otherLabel.set_margin_top(12)
+		self.otherLabel.set_margin_bottom(12)
+		self.otherRow.add(self.otherLabel)
+		self.catagoryList.add(self.otherRow)
+
 		self.systemRow = Gtk.ListBoxRow()
 		self.systemBox = Gtk.Box(spacing=1)
 		self.systemLabel = Gtk.Label()
@@ -194,13 +236,31 @@ class lapp(Gtk.Window):
 		self.webappsRow.add(self.webappsLabel)
 		self.catagoryList.add(self.webappsRow)
 
-		self.add(self.catagoryStack)
+		######################
+		# findMainStackSetup #
+		######################
 
-		# self.mainStack.add_titled(self.homeList, "homePage", "Home")
-		# self.mainStack.add_titled(self.catagoryStack, "catagoryPage", "Catagories")
-		# self.mainStack.add_titled(self.searchList, "searchPage", "Search")
-		# self.mainStack.add_titled(self.myAppsList, "myAppsPage", "My Apps")
-		# self.mainStack.add_titled(self.updatesList, "updatesPage", "Updates")
+		self.mainStack.add_titled(self.homeList, "homePage", "Home")
+		self.mainStack.add_titled(self.catagoryStack, "catagoryPage", "Catagories")
+		self.mainStack.add_titled(self.searchList, "searchPage", "Search")
+		self.mainStack.add_titled(self.myAppsList, "myAppsPage", "Installed")
+		self.mainStack.add_titled(self.updatesList, "updatesPage", "Updates")
+
+		self.mainStack.child_set_property(self.homeList, "icon-name", "go-home-symbolic")
+		self.mainStack.child_set_property(self.catagoryStack, "icon-name", "view-list-symbolic")
+		self.mainStack.child_set_property(self.searchList, "icon-name", "system-search-symbolic")
+		self.mainStack.child_set_property(self.myAppsList, "icon-name", "avatar-default-symbolic")
+		self.mainStack.child_set_property(self.updatesList, "icon-name", "software-update-available-symbolic")
+
+		self.mainStackSwitcherBar = Handy.ViewSwitcherBar()
+		self.mainStackSwitcherBar.set_stack(self.mainStack)
+		self.mainStackSwitcherBar.set_reveal(True)
+
+		self.mainVBox = Gtk.VBox()
+		self.mainVBox.pack_end(self.mainStackSwitcherBar, False, False, 0)
+		self.mainVBox.pack_start(self.mainStack, True, True, 0)
+
+		self.add(self.mainVBox)
 
 	# 	with open("metadata.json") as metadata:
 	# 		repo = json.load(metadata)
