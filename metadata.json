@@ -1,0 +1,166 @@
+{
+	"apps": [
+        {
+			"id": "authenticator",
+            "name": "Authenticator",
+            "shortdescription": "2FA Manager.",
+            "description": "Simple application that generates a two-factor authentication code, created for GNOME.",
+			"catagory": "accessories",
+            "compatablity": "5",
+            "shell": "phosh",
+            "icon": "com.github.bilelmoussaoui.Authenticator",
+            "icon-url": "https://dl.flathub.org/repo/appstream/x86_64/icons/128x128/com.github.bilelmoussaoui.Authenticator.png",
+            "package": [
+                {
+                    "apt": "None",
+                    "flathub": "com.github.bilelmoussaoui.Authenticator",
+                    "apk": "None"
+                }
+            ]
+        },
+        {
+			"id": "deja-dup",
+            "name": "Backups",
+            "shortdescription": "Simple backup tool.",
+            "description": "Déjà Dup is a simple backup tool. It hides the complexity of backing up the Right Way (encrypted, off-site, and regular) and uses duplicity as the backend.\n\nDéjà Dup focuses on ease of use and personal, accidental data loss. If you need a full system backup or an archival program, you may prefer other backup apps.",
+			"catagory": "system",
+            "compatablity": "5",
+            "shell": "phosh",
+            "icon": "deja-dup",
+            "icon-url": "https://wiki.gnome.org/Apps/DejaDup/Header?action=AttachFile&do=get&target=logo.png",
+            "package": [
+                {
+                    "apt": "deja-dup",
+                    "flathub": "org.gnome.DejaDup",
+                    "apk": "deja-dup"
+                }
+            ]
+        },
+        {
+			"id": "gnome-calculator",
+            "name": "GNOME Calculator",
+            "shortdescription": "A calculator.",
+            "description": "Calculator is an application that solves mathematical equations and is suitable as a default application in a Desktop environment.",
+			"catagory": "accessories",
+            "compatablity": "5",
+            "shell": "phosh",
+            "icon": "org.gnome.Calculator",
+            "icon-url": "https://dl.flathub.org/repo/appstream/x86_64/icons/128x128/org.gnome.Calculator.png",
+            "package": [
+                {
+                    "apt": "gnome-calculator",
+                    "flathub": "org.gnome.Calculator",
+                    "apk": "gnome-calculator"
+                }
+            ]
+        },
+        {
+			"id": "calls",
+            "name": "Calls",
+            "shortdescription": "Phone call application",
+            "description": "A phone dialer and call handler designed for phosh.",
+			"catagory": "communication",
+            "compatablity": "5",
+            "shell": "phosh",
+            "icon": "sm.puri.Calls",
+            "icon-url": "https://gitlab.gnome.org/Community/Purism/calls/-/raw/master/data/sm.puri.Calls.svg",
+            "package": [
+                {
+                    "apt": "calls",
+                    "flathub": "None",
+                    "apk": "calls"
+                }
+            ]
+        },
+        {
+			"id": "chatty",
+            "name": "Chats",
+            "shortdescription": "XMPP and SMS messager.",
+            "description": "XMPP and SMS messaging via libpurple and Modemmanager.",
+			"catagory": "communication",
+            "compatablity": "5",
+            "shell": "phosh",
+            "icon": "sm.puri.Chatty",
+            "icon-url": "https://source.puri.sm/Librem5/chatty/raw/master/data/icons/hicolor/scalable/apps/sm.puri.Chatty.svg",
+            "package": [
+                {
+                    "apt": "chatty",
+                    "flathub": "None",
+                    "apk": "chatty"
+                }
+            ]
+        },
+        {
+			"id": "gnome-clocks",
+            "name": "GNOME Clock",
+            "shortdescription": "A simple clock app.",
+            "description": "A simple clock application for GNOME. It includes world clocks, alarms, a stopwatch and a timer.",
+			"catagory": "accessories",
+            "compatablity": "5",
+            "shell": "phosh",
+            "icon": "org.gnome.clocks",
+            "icon-url": "https://dl.flathub.org/repo/appstream/x86_64/icons/128x128/org.gnome.clocks.png",
+            "package": [
+                {
+                    "apt": "gnome-clocks",
+                    "flathub": "org.gnome.clocks",
+                    "apk": "gnome-clocks"
+                }
+            ]
+        },
+        {
+			"id": "gnome-contacts",
+            "name": "GNOME Contacts",
+            "shortdescription": "A contacts manager for GNOME.",
+            "description": "Contacts organizes your contacts information from all your online and offline sources, providing a centralized place for managing your contacts.",
+			"catagory": "communication",
+            "compatablity": "5",
+            "shell": "phosh",
+            "icon": "org.gnome.Contacts",
+            "icon-url": "https://dl.flathub.org/repo/appstream/x86_64/icons/128x128/org.gnome.Contacts.png",
+            "package": [
+                {
+                    "apt": "gnome-contacts",
+                    "flathub": "org.gnome.Contacts",
+                    "apk": "gnome-contacts"
+                }
+            ]
+        },
+        {
+			"id": "gnome-evince",
+            "name": "Evince",
+            "shortdescription": "Document viewer.",
+            "description": "Evince is a document viewer for multiple document formats. The goal of evince is to replace the multiple document viewers that exist on the GNOME Desktop with a single simple application. ",
+			"catagory": "productivity",
+            "compatablity": "5",
+            "shell": "phosh",
+            "icon": "org.gnome.Evince",
+            "icon-url": "https://dl.flathub.org/repo/appstream/x86_64/icons/128x128/org.gnome.Evince.png",
+            "package": [
+                {
+                    "apt": "evince",
+                    "flathub": "org.gnome.Evince",
+                    "apk": "evince"
+                }
+            ]
+        },
+        {
+			"id": "gnome-software",
+            "name": "GNOME Software",
+            "shortdescription": "Software Manager",
+            "description": "GNOME Software lets you install and update applications and system extensions. ",
+			"catagory": "system",
+            "compatablity": "4",
+            "shell": "phosh",
+            "icon": "org.gnome.Software",
+            "icon-url": "https://upload.wikimedia.org/wikipedia/commons/1/16/GNOME_Software_icon_hicolor.svg",
+            "package": [
+                {
+                    "apt": "gnome-software",
+                    "flathub": "None",
+                    "apk": "gnome-software"
+                }
+            ]
+        }
+    ]
+}

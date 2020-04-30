@@ -1,0 +1,30 @@
+{
+	"apps": [	
+        {
+			"id": "Authenticator",
+            "name": "Authenticator",
+            "shortdescription": "Two-Factor Authentication app",
+            "description": "Simple application that generates a two-factor authentication code, created for GNOME.",
+			"catagory": "accessories",
+            "compatablity": "5",
+            "shell": "phosh",
+            "icon": "authenticator",
+            "fallback-icon": "https://dl.flathub.org/repo/appstream/x86_64/icons/128x128/com.github.bilelmoussaoui.Authenticator.png",
+            "package": [
+                {
+                    "apt": "None",
+                    "flathub": "com.github.bilelmoussaoui.authenticator",
+                    "apk": "None"
+                }
+            ],
+            "webappurl": "url",
+            "screenshots": [
+                {
+                    "screenshot1": "url",
+                    "screenshot2": "url",
+                    "screenshot3": "url"
+                }
+            ]
+        }
+    ]
+}
