@@ -47,24 +47,50 @@ else:
 	#git = subprocess.Popen(["git", "pull", "https://github.com/pizzalovingnerd/lapp-store-metadata"])
 #git.wait()
 
+<<<<<<< HEAD
 class lapp(Gtk.Window):
 
 	# findVariablesSet
+=======
+HOME = os.getenv("HOME")
+DIR = "{0}/.local/share/lapp-store".format(HOME)
+
+# if os.path.isdir(lappStoreDir) == False:
+# 	os.makedirs(lappStoreDir)
+# 	os.chdir(lappStoreDir)
+# 	git = subprocess.Popen(["git", "clone", "https://github.com/pizzalovingnerd/lapp-store-metadata", "."])
+# else: 
+# 	os.chdir(lappStoreDir)
+# 	git = subprocess.Popen(["git", "pull", "https://github.com/pizzalovingnerd/lapp-store-metadata"])
+#
+# git.wait()
+>>>>>>> f82dc6c958de7fec4fc820b64c5c0e2778fac025
 
 	# The Window
 	def __init__(self):
 
+<<<<<<< HEAD
+=======
+		# findVariablesSet
+
+>>>>>>> f82dc6c958de7fec4fc820b64c5c0e2778fac025
 		self.ListBoxRows = {}
 		self.Box = {}
 		self.VBox = {}
 		self.Icon = {}
 		self.Pixbuf = {}
+<<<<<<< HEAD
+=======
+		self.Name = {}
+		self.ShortDescription = {}
+>>>>>>> f82dc6c958de7fec4fc820b64c5c0e2778fac025
 		self.Description = {}
 		self.catagory = {}
 		self.catagoryScroll = {}
 		self.catagoryRow = {}
 		self.catagoryLabel = {}
 		self.catagoryBox = {}
+<<<<<<< HEAD
 		self.appStack = Gtk.Stack()
 		self.appStackPages = {}
 		self.appTopBox = {}
@@ -89,6 +115,41 @@ class lapp(Gtk.Window):
 		self.catagoryIndexId["searchResults"] = 0
 		self.ListBoxInfo = {}
 		self.data = {}
+=======
+		catagoryIndex = {}
+		catagoryIndex["catagory"] = {}
+		catagoryIndexId = {}
+		catagoryIndexId["catagory"] = 0
+		self.appStack = Gtk.Stack()
+		self.appStackPages = {}
+		back = None
+
+		def createCatagory(catagoryVar, catagoryName):
+			self.catagory[catagoryVar] = Gtk.ListBox()
+			self.catagoryScroll[catagoryVar] = Gtk.ScrolledWindow()
+			self.catagoryScroll[catagoryVar].add(self.catagory[catagoryVar])
+			self.catagoryStack.add_titled(self.catagoryScroll[catagoryVar], catagoryVar + "Page", catagoryName)
+
+			# Add Catagory to List
+			self.catagoryRow[catagoryVar] = Gtk.ListBoxRow()
+			self.catagoryBox[catagoryVar] = Gtk.Box(spacing=1)
+			self.catagoryLabel[catagoryVar] = Gtk.Label()
+			self.catagoryLabel[catagoryVar].set_markup("<b>" + catagoryName + "</b>")
+			self.catagoryLabel[catagoryVar].set_margin_top(12)
+			self.catagoryLabel[catagoryVar].set_margin_bottom(12)
+			self.catagoryRow[catagoryVar].add(self.catagoryLabel[catagoryVar])
+			self.catagoryList.add(self.catagoryRow[catagoryVar])
+
+			catagoryIndex["catagory"][catagoryIndexId["catagory"]] = catagoryVar + "Page"
+			catagoryIndexId["catagory"] = catagoryIndexId["catagory"] + 1
+
+			catagoryIndex[catagoryVar] = {}
+			catagoryIndexId[catagoryVar] = 0
+
+		def catagoryListClicked(self, ListBox, Stack):
+			if ListBox == self.catagoryList: Stack.set_visible_child_name(catagoryIndex["catagory"[ListBox.get_index()]])
+			else: print("else")
+>>>>>>> f82dc6c958de7fec4fc820b64c5c0e2778fac025
 
 		# Generating Window
 
@@ -102,14 +163,25 @@ class lapp(Gtk.Window):
 		self.headerBar.set_show_close_button(False) # Adds Close Button (and Minimize Button)
 		self.set_titlebar(self.headerBar) # Sets this HeaderBar as the titlebar
 
+<<<<<<< HEAD
+		self.visibleStack = Gtk.Stack()
+		self.visibleStack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
+		self.visibleStack.set_transition_duration(250)
+=======
+		self.backButton = Gtk.Button.new_from_icon_name("go-previous-symbolic", Gtk.IconSize.BUTTON)
+		self.backButton.set_sensitive(False)
+		self.headerBar.pack_start(self.backButton)
+>>>>>>> f82dc6c958de7fec4fc820b64c5c0e2778fac025
+
 		self.visibleStack = Gtk.Stack()
 		self.visibleStack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
 		self.visibleStack.set_transition_duration(250)
 
 		self.mainStack = Gtk.Stack()
-		self.mainStack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
-		self.mainStack.set_transition_duration(250)
+		self.visibleStack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
+		self.visibleStack.set_transition_duration(250)
 
+<<<<<<< HEAD
 		self.catagoryStack = Gtk.Stack()
 		self.catagoryStack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
 		self.catagoryStack.set_transition_duration(250)
@@ -119,21 +191,35 @@ class lapp(Gtk.Window):
 		self.backButton.connect("clicked", self.backClicked)
 		self.headerBar.pack_start(self.backButton)
 
+=======
+>>>>>>> f82dc6c958de7fec4fc820b64c5c0e2778fac025
 		# findGtkListGen
 
 		self.homeList = Gtk.ListBox()
 		self.catagoryList = Gtk.ListBox()
 		self.myAppsList = Gtk.ListBox()
+<<<<<<< HEAD
+=======
+
+		self.catagoryStack = Gtk.Stack()
+		self.catagoryStack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
+		self.catagoryStack.set_transition_duration(250)
+>>>>>>> f82dc6c958de7fec4fc820b64c5c0e2778fac025
 
 		# findCatagoryGen
 
 		self.catagoryList = Gtk.ListBox()
 		self.catagoryList.set_selection_mode(Gtk.SelectionMode.NONE)
+<<<<<<< HEAD
 		self.catagoryList.connect("row-activated", self.catagoryListClicked)
+=======
+		self.catagoryList.connect("row-activated", catagoryListClicked, self.catagoryStack)
+>>>>>>> f82dc6c958de7fec4fc820b64c5c0e2778fac025
 		self.catagoryScroll["catagoryList"] = Gtk.ScrolledWindow()
 		self.catagoryScroll["catagoryList"].add(self.catagoryList)
 		self.catagoryStack.add_titled(self.catagoryScroll["catagoryList"], "catagoryPage", "Catagories")
 
+<<<<<<< HEAD
 		self.createCatagory("all", "All")
 		self.createCatagory("accessories", "Accessories")
 		self.createCatagory("communication", "Communication")
@@ -172,16 +258,36 @@ class lapp(Gtk.Window):
 		
 		self.searchBox.pack_start(self.searchScroll, True, True, 0)
 
+=======
+		createCatagory("accessories", "Accessories")
+		createCatagory("communication", "Communication")
+		createCatagory("games", "Fun and Games")
+		createCatagory("internet", "Internet and News")
+		createCatagory("education", "Education")
+		createCatagory("other", "Other")
+		createCatagory("productivity", "Productivity")
+		createCatagory("system", "System")
+		createCatagory("webapps", "Web Apps")
+		
+>>>>>>> f82dc6c958de7fec4fc820b64c5c0e2778fac025
 		# findVisibleStackSetup
 
 		self.visibleStack.add_titled(self.homeList, "homePage", "Home")
 		self.visibleStack.add_titled(self.catagoryStack, "catagoryPage", "Catagories")
+<<<<<<< HEAD
 		self.visibleStack.add_titled(self.searchBox, "searchPage", "Search")
+=======
+		self.visibleStack.add_titled(self.searchList, "searchPage", "Search")
+>>>>>>> f82dc6c958de7fec4fc820b64c5c0e2778fac025
 		self.visibleStack.add_titled(self.myAppsList, "myAppsPage", "Installed")
 
 		self.visibleStack.child_set_property(self.homeList, "icon-name", "go-home-symbolic")
 		self.visibleStack.child_set_property(self.catagoryStack, "icon-name", "view-list-symbolic")
+<<<<<<< HEAD
 		self.visibleStack.child_set_property(self.searchBox, "icon-name", "system-search-symbolic")
+=======
+		self.visibleStack.child_set_property(self.searchList, "icon-name", "system-search-symbolic")
+>>>>>>> f82dc6c958de7fec4fc820b64c5c0e2778fac025
 		self.visibleStack.child_set_property(self.myAppsList, "icon-name", "avatar-default-symbolic")
 
 		self.visibleStackSwitcherBar = Handy.ViewSwitcherBar()
@@ -190,16 +296,23 @@ class lapp(Gtk.Window):
 		
 		self.mainStack.add_titled(self.visibleStack, "mainPages", "Main")
 		self.mainStack.add_titled(self.appStack, "appPages", "App")
+<<<<<<< HEAD
 		# self.mainStack.add_titled(self.installTerminal, "appInstallPages", "Install")
 		self.mainStack.add_titled(self.loadingGrid, "loadingPage", "Loading")
 
 		self.visibleStack.connect("notify::visible-child", self.visibleStackChanged)
 
 		self.mainVBox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+=======
+
+		self.mainVBox = Gtk.Box()
+		self.mainVBox.set_orientation(Gtk.Orientation.VERTICAL)
+>>>>>>> f82dc6c958de7fec4fc820b64c5c0e2778fac025
 		self.mainVBox.pack_end(self.visibleStackSwitcherBar, False, False, 0)
 		self.mainVBox.pack_start(self.mainStack, True, True, 0)
 
 		self.add(self.mainVBox)
+<<<<<<< HEAD
 		# findReadMetadata
 
 		for app in repo["apps"]:
@@ -438,6 +551,44 @@ class lapp(Gtk.Window):
 			else: child.set_visible(False)
 
 			self.catagoryIndexId["searchResults"] = self.catagoryIndexId["searchResults"] + 1
+=======
+		
+		with open("metadata.json") as metadata:
+	 		repo = json.load(metadata)
+
+		# findReadMetadata
+
+		for app in repo["apps"]:
+			self.ListBoxRows[app["id"]] = Gtk.ListBoxRow()
+
+			self.Box[app["id"]] = Gtk.Box(spacing=10)
+			self.VBox[app["id"]] = Gtk.Box()
+			self.VBox[app["id"]].set_orientation(Gtk.Orientation.VERTICAL)
+			
+			self.Icon[app["id"]] = Gtk.Image.new_from_icon_name(app["icon"], Gtk.IconSize.DIALOG)
+			
+			self.Name[app["id"]] = Gtk.Label(xalign=0)
+			self.Name[app["id"]].set_margin_top(5)
+			self.Name[app["id"]].set_markup("<b>" + app["name"] + "</b>")
+
+			self.ShortDescription[app["id"]] = Gtk.Label(xalign=0)
+			self.ShortDescription[app["id"]].set_label(app["shortdescription"])
+			
+			self.Description[app["id"]] = Gtk.Label()
+			self.Description[app["id"]].set_label(app["description"])
+
+			self.Box[app["id"]].pack_start(self.Icon[app["id"]], False, False, 0)
+			self.VBox[app["id"]].pack_start(self.Name[app["id"]], False, False, 0)
+			self.VBox[app["id"]].pack_start(self.ShortDescription[app["id"]], False, False, 0)
+			self.Box[app["id"]].pack_start(self.VBox[app["id"]], True, True, 0)
+
+			self.catagory[app["catagory"]].add(self.Box[app["id"]])
+
+			catagoryIndex[app["catagory"]][catagoryIndexId[app["catagory"]]] = 0
+			catagoryIndexId[app["catagory"]] = catagoryIndexId[app["catagory"]] + 1
+
+			self.appStackPages[app["id"]] = Gtk.Box
+>>>>>>> f82dc6c958de7fec4fc820b64c5c0e2778fac025
 
 mainWindow = lapp()
 mainWindow.connect("delete-event", Gtk.main_quit) # Makes the close button close the Window.
