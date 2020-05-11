@@ -17,14 +17,15 @@
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Handy', '0.0')
-gi.require_version('AppStream', '1.0')
-gi.require_version('AppStreamGlib', '1.0')
-from gi.repository import Gtk, Handy, Gio, GLib, AppStream, AppStreamGlib
+gi.require_version('Vte', '2.91')
+from gi.repository import Gtk, Handy, GdkPixbuf, Vte, GLib, GObject, Gio
 from gi.repository.GdkPixbuf import Pixbuf
 import os
 import subprocess
 from urllib.request import urlopen
 import json
+import time
+import threading
 
 HOME = os.getenv("HOME")
 DIR = "{0}/.local/share/lapp-store".format(HOME)
@@ -32,6 +33,7 @@ ICONDIR = "{0}/icons/".format(DIR)
 APPSTREAMICONDIR = "{0}appstream/".format(ICONDIR)
 FLATHUBICONDIR = "{0}flathub/".format(ICONDIR)
 FALLBACKICONDIR = "{0}fallback/".format(ICONDIR)
+BINDIR = "/usr/bin/"
 
 with open("metadata.json") as metadata:
 	repo = json.load(metadata)
@@ -46,29 +48,23 @@ else:
 #git.wait()
 
 class lapp(Gtk.Window):
-	
+
+	# findVariablesSet
+
 	# The Window
 	def __init__(self):
-
-		# findVariablesSet
 
 		self.ListBoxRows = {}
 		self.Box = {}
 		self.VBox = {}
 		self.Icon = {}
 		self.Pixbuf = {}
-		self.Name = {}
-		self.ShortDescription = {}
 		self.Description = {}
 		self.catagory = {}
 		self.catagoryScroll = {}
 		self.catagoryRow = {}
 		self.catagoryLabel = {}
 		self.catagoryBox = {}
-		catagoryIndex = {}
-		catagoryIndex["catagory"] = {}
-		catagoryIndexId = {}
-		catagoryIndexId["catagory"] = 0
 		self.appStack = Gtk.Stack()
 		self.appStackPages = {}
 		self.appTopBox = {}
@@ -78,68 +74,27 @@ class lapp(Gtk.Window):
 		self.appScreenshots = {}
 		self.appVbox = {}
 		self.appStream = {}
-		back = None
-
-		def createCatagory(catagoryVar, catagoryName):
-			self.catagory[catagoryVar] = Gtk.ListBox()
-			self.catagoryScroll[catagoryVar] = Gtk.ScrolledWindow()
-			self.catagoryScroll[catagoryVar].add(self.catagory[catagoryVar])
-			self.catagoryStack.add_titled(self.catagoryScroll[catagoryVar], catagoryVar + "Page", catagoryName)
-
-			# Add Catagory to List
-			self.catagoryRow[catagoryVar] = Gtk.ListBoxRow()
-			self.catagoryBox[catagoryVar] = Gtk.Box(spacing=1)
-			self.catagoryLabel[catagoryVar] = Gtk.Label()
-			self.catagoryLabel[catagoryVar].set_markup("<b>" + catagoryName + "</b>")
-			self.catagoryLabel[catagoryVar].set_margin_top(12)
-			self.catagoryLabel[catagoryVar].set_margin_bottom(12)
-			self.catagoryRow[catagoryVar].add(self.catagoryLabel[catagoryVar])
-			self.catagoryList.add(self.catagoryRow[catagoryVar])
-			self.catagory[catagoryVar].connect("row-activated", appListClicked, self.mainStack, self.appStack, catagoryVar)
-
-			catagoryIndex["catagory"][catagoryIndexId["catagory"]] = catagoryVar + "Page"
-			catagoryIndexId["catagory"] = catagoryIndexId["catagory"] + 1
-
-			catagoryIndex[catagoryVar] = {}
-			catagoryIndexId[catagoryVar] = 0
-
-		def catagoryListClicked(self, ListBox, Stack):
-			Stack.set_visible_child_name(catagoryIndex["catagory"][ListBox.get_index()])
-		
-		def appListClicked(self, ListBox, mainStack, appStack, catagoryVar):
-			mainStack.set_visible_child_name("appPages")
-			print(ListBox.get_index())
-			print(catagoryIndex[catagoryVar][ListBox.get_index()])
-			appStack.set_visible_child_name(catagoryIndex[catagoryVar][ListBox.get_index()])
-
-		def grabbingIcons():
-			if os.path.isdir(APPSTREAMICONDIR) == False:
-				os.makedirs(APPSTREAMICONDIR)
-				subprocess.call(["wget", "https://appstream.debian.org/data/bullseye/main/icons-64x64.tar.gz"])
-				subprocess.call(["tar", "-xf", "icons-64x64.tar.gz", "-C", APPSTREAMICONDIR])
-				os.remove("icons-64x64.tar.gz")
-
-			if os.path.isdir(FLATHUBICONDIR) == False:
-				os.makedirs(FLATHUBICONDIR)
-
-			if os.path.isdir(FALLBACKICONDIR) == False:
-				os.makedirs(FALLBACKICONDIR)
-
-			for app in repo["apps"]:
-				if app["package"][0]["flathub"] != "None" and os.path.isfile(FLATHUBICONDIR + app["package"][0]["flathub"] + ".png") == False:
-					subprocess.call(["wget", "https://dl.flathub.org/repo/appstream/x86_64/icons/64x64/" + app["package"][0]["flathub"] + ".png", "-P", FLATHUBICONDIR])
-				if os.path.isfile(APPSTREAMICONDIR + app["package"][0]["apt"] + ".png") == False and app["package"][0]["flathub"] == "None" and os.path.isfile(FALLBACKICONDIR + app["id"] + ".png") == False:
-					subprocess.call(["wget", app["icon-url"], "-O", FALLBACKICONDIR + app["id"] + ".png"]) 
-
-		# Fix Fallback Icons always redownloading
-
-		grabbingIcons()
+		self.packageMenu = {}
+		self.appLabelAndButtons = {}
+		self.appButtons = {}
+		self.TerminalBox = Gtk.Box()
+		self.Terminal = Vte.Terminal()
+		self.catagoryIndex = {}
+		self.catagoryIndex["catagory"] = {}
+		self.catagoryIndex["search"] = {}
+		self.catagoryIndex["searchResults"] = {}
+		self.catagoryIndexId = {}
+		self.catagoryIndexId["catagory"] = 0
+		self.catagoryIndexId["search"] = 0
+		self.catagoryIndexId["searchResults"] = 0
+		self.ListBoxInfo = {}
+		self.data = {}
 
 		# Generating Window
+
 		Gtk.Window.__init__(self, title="Lapp Store")
 		self.set_default_size(360, 412)
 		self.set_resizable(True)
-		# self.set_border_width(10)
 
 		# fHeaderBar
 
@@ -147,58 +102,86 @@ class lapp(Gtk.Window):
 		self.headerBar.set_show_close_button(False) # Adds Close Button (and Minimize Button)
 		self.set_titlebar(self.headerBar) # Sets this HeaderBar as the titlebar
 
-		self.backButton = Gtk.Button.new_from_icon_name("go-previous-symbolic", Gtk.IconSize.BUTTON)
-		self.backButton.set_sensitive(False)
-		self.headerBar.pack_start(self.backButton)
-
 		self.visibleStack = Gtk.Stack()
 		self.visibleStack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
 		self.visibleStack.set_transition_duration(250)
 
 		self.mainStack = Gtk.Stack()
-		self.visibleStack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
-		self.visibleStack.set_transition_duration(250)
-
-		# findGtkListGen
-
-		self.homeList = Gtk.ListBox()
-		self.catagoryList = Gtk.ListBox()
-		self.searchList = Gtk.ListBox()
-		self.myAppsList = Gtk.ListBox()
+		self.mainStack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
+		self.mainStack.set_transition_duration(250)
 
 		self.catagoryStack = Gtk.Stack()
 		self.catagoryStack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
 		self.catagoryStack.set_transition_duration(250)
 
+		self.backButton = Gtk.Button.new_from_icon_name("go-previous-symbolic", Gtk.IconSize.BUTTON)
+		self.backButton.set_sensitive(False)
+		self.backButton.connect("clicked", self.backClicked)
+		self.headerBar.pack_start(self.backButton)
+
+		# findGtkListGen
+
+		self.homeList = Gtk.ListBox()
+		self.catagoryList = Gtk.ListBox()
+		self.myAppsList = Gtk.ListBox()
+
 		# findCatagoryGen
 
 		self.catagoryList = Gtk.ListBox()
 		self.catagoryList.set_selection_mode(Gtk.SelectionMode.NONE)
-		self.catagoryList.connect("row-activated", catagoryListClicked, self.catagoryStack)
+		self.catagoryList.connect("row-activated", self.catagoryListClicked)
 		self.catagoryScroll["catagoryList"] = Gtk.ScrolledWindow()
 		self.catagoryScroll["catagoryList"].add(self.catagoryList)
 		self.catagoryStack.add_titled(self.catagoryScroll["catagoryList"], "catagoryPage", "Catagories")
 
-		createCatagory("accessories", "Accessories")
-		createCatagory("communication", "Communication")
-		createCatagory("games", "Fun and Games")
-		createCatagory("internet", "Internet and News")
-		createCatagory("education", "Education")
-		createCatagory("other", "Other")
-		createCatagory("productivity", "Productivity")
-		createCatagory("system", "System")
-		createCatagory("webapps", "Web Apps")
+		self.createCatagory("all", "All")
+		self.createCatagory("accessories", "Accessories")
+		self.createCatagory("communication", "Communication")
+		self.createCatagory("games", "Fun and Games")
+		self.createCatagory("internet", "Internet and News")
+		self.createCatagory("education", "Education")
+		self.createCatagory("other", "Other")
+		self.createCatagory("productivity", "Productivity")
+		self.createCatagory("system", "System")
+		self.createCatagory("webapps", "Web Apps")
 		
+		# findLoadingGrid
+
+		self.loadingGrid = Gtk.Grid(valign=Gtk.Align.CENTER, halign=Gtk.Align.CENTER, row_homogeneous=True, column_homogeneous=True)
+		self.loadingLabel = Gtk.Label(label="Installing Firefox")
+		self.loadingSpinner = Gtk.Spinner(active=True)
+		self.loadingGrid.attach(self.loadingLabel, 1, 1, 3, 1)
+		self.loadingGrid.attach(self.loadingSpinner, 1, 4, 3, 3)
+
+		# findSearchBox
+
+		self.searchBox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+		self.searchBar = Gtk.SearchBar(search_mode_enabled=True, show_close_button=False)
+		self.searchEntry = Gtk.SearchEntry()
+		self.searchBar.add(self.searchEntry)
+		self.searchResults = Gtk.ListBox()
+		self.searchResults.connect("row-activated", self.appListClicked, "search")
+		self.searchEntry.connect("changed", self.search)
+		# self.searchResults.set_filter_func(self.searchFilter, self.searchEntry.get_text())
+
+		self.searchScroll = Gtk.ScrolledWindow()
+		self.catagoryIndexId["search"] = 0
+		self.searchScroll.add(self.searchResults)
+
+		self.searchBox.pack_start(self.searchBar, False, False, 0)
+		
+		self.searchBox.pack_start(self.searchScroll, True, True, 0)
+
 		# findVisibleStackSetup
 
 		self.visibleStack.add_titled(self.homeList, "homePage", "Home")
 		self.visibleStack.add_titled(self.catagoryStack, "catagoryPage", "Catagories")
-		self.visibleStack.add_titled(self.searchList, "searchPage", "Search")
+		self.visibleStack.add_titled(self.searchBox, "searchPage", "Search")
 		self.visibleStack.add_titled(self.myAppsList, "myAppsPage", "Installed")
 
 		self.visibleStack.child_set_property(self.homeList, "icon-name", "go-home-symbolic")
 		self.visibleStack.child_set_property(self.catagoryStack, "icon-name", "view-list-symbolic")
-		self.visibleStack.child_set_property(self.searchList, "icon-name", "system-search-symbolic")
+		self.visibleStack.child_set_property(self.searchBox, "icon-name", "system-search-symbolic")
 		self.visibleStack.child_set_property(self.myAppsList, "icon-name", "avatar-default-symbolic")
 
 		self.visibleStackSwitcherBar = Handy.ViewSwitcherBar()
@@ -207,70 +190,257 @@ class lapp(Gtk.Window):
 		
 		self.mainStack.add_titled(self.visibleStack, "mainPages", "Main")
 		self.mainStack.add_titled(self.appStack, "appPages", "App")
+		# self.mainStack.add_titled(self.installTerminal, "appInstallPages", "Install")
+		self.mainStack.add_titled(self.loadingGrid, "loadingPage", "Loading")
 
-		self.mainVBox = Gtk.Box()
-		self.mainVBox.set_orientation(Gtk.Orientation.VERTICAL)
+		self.visibleStack.connect("notify::visible-child", self.visibleStackChanged)
+
+		self.mainVBox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 		self.mainVBox.pack_end(self.visibleStackSwitcherBar, False, False, 0)
 		self.mainVBox.pack_start(self.mainStack, True, True, 0)
 
 		self.add(self.mainVBox)
-
 		# findReadMetadata
 
 		for app in repo["apps"]:
-			self.ListBoxRows[app["id"]] = Gtk.ListBoxRow()
+			self.listBoxItem(
+				app["id"],
+				app["package"][0]["apt"],
+				app["package"][0]["apk"],
+				app["package"][0]["flathub"],
+				app["name"],
+				app["shortdescription"],
+				self.catagory["all"],
+				"all",
+				app["icon"]
+			)
 
-			self.Box[app["id"]] = Gtk.Box(spacing=10)
-			self.VBox[app["id"]] = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-			
-			if os.path.isfile(APPSTREAMICONDIR + app["package"][0]["apt"] + "_" + app["icon"] + ".png") == True:
-				self.Icon[app["id"]] = Gtk.Image.new_from_file(APPSTREAMICONDIR + app["package"][0]["apt"] + "_" + app["icon"] + ".png")
-				self.Icon[app["id"] + "ForPage"] = Gtk.Image.new_from_file(APPSTREAMICONDIR + app["package"][0]["apt"] + "_" + app["icon"] + ".png")
-			elif os.path.isfile(FLATHUBICONDIR + app["package"][0]["flathub"] + ".png") == True:
-				self.Icon[app["id"]] = Gtk.Image.new_from_file(FLATHUBICONDIR + app["package"][0]["flathub"] + ".png")
-				self.Icon[app["id"] + "ForPage"] = Gtk.Image.new_from_file(FLATHUBICONDIR + app["package"][0]["flathub"] + ".png")
-			elif os.path.isfile(FALLBACKICONDIR + app["id"] + ".png") == True:
-				self.Icon[app["id"]] = Gtk.Image.new_from_file(FALLBACKICONDIR + app["id"] + ".png")
-				self.Icon[app["id"] + "ForPage"] = Gtk.Image.new_from_file(FALLBACKICONDIR + app["id"] + ".png")
-			else: 
-				self.Icon[app["id"]] = Gtk.Image()
-				self.Icon[app["id"] + "ForPage"] = Gtk.Image()
+			self.listBoxItem(
+				app["id"],
+				app["package"][0]["apt"],
+				app["package"][0]["apk"],
+				app["package"][0]["flathub"],
+				app["name"],
+				app["shortdescription"],
+				self.catagory[app["catagory"]],
+				app["catagory"],
+				app["icon"]
+			)
 
-			self.Name[app["id"]] = Gtk.Label(xalign=0)
-			self.Name[app["id"]].set_margin_top(5)
-			self.Name[app["id"]].set_markup("<b>" + app["name"] + "</b>")
-			self.Name[app["id"] + "ForPage"] = Gtk.Label(xalign=0)
-			self.Name[app["id"] + "ForPage"].set_markup("<b>" + app["name"] + "</b>")
-			# self.Name[app["id"] + "ForPage"].
+			self.listBoxItem(
+				app["id"],
+				app["package"][0]["apt"],
+				app["package"][0]["apk"],
+				app["package"][0]["flathub"],
+				app["name"],
+				app["shortdescription"],
+				self.searchResults,
+				"search",
+				app["icon"]
+			)
 
-			self.ShortDescription[app["id"]] = Gtk.Label(xalign=0, label=app["shortdescription"])
-			
-			self.Description[app["id"]] = Gtk.Label(label=app["description"])
+			self.searchData(
+				app["id"],
+				app["name"],
+				app["shortdescription"],
+				app["description"]
+			)
 
-			self.Box[app["id"]].pack_start(self.Icon[app["id"]], False, False, 0)
-			self.VBox[app["id"]].pack_start(self.Name[app["id"]], False, False, 0)
-			self.VBox[app["id"]].pack_start(self.ShortDescription[app["id"]], False, False, 0)
-			self.Box[app["id"]].pack_start(self.VBox[app["id"]], True, True, 0)
+			self.appPage(
+				app["id"],
+				app["package"][0]["apt"],
+				app["package"][0]["apk"],
+				app["package"][0]["flathub"],
+				app["name"],
+				app["description"],
+				app["icon"],
+				app["compatablity"]
+			)
 
-			self.catagory[app["catagory"]].add(self.Box[app["id"]])
+	def appPage(self, id, apt, apk, flathub, name, description, icon, compatablity):
+		if os.path.isfile(APPSTREAMICONDIR + apt + "_" + icon + ".png") == True:
+			self.Icon = Gtk.Image.new_from_file(APPSTREAMICONDIR + apt + "_" + icon + ".png")
+		elif os.path.isfile(FLATHUBICONDIR + flathub + ".png") == True:
+			self.Icon = Gtk.Image.new_from_file(FLATHUBICONDIR + flathub + ".png")
+		elif os.path.isfile(FALLBACKICONDIR + id + ".png") == True:
+			self.IconPixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(FALLBACKICONDIR + id + ".png", width=64, height=64, preserve_aspect_ratio=True)
+			self.Icon = Gtk.Image.new_from_pixbuf(self.IconPixbuf)
+		else: 
+			self.Icon = Gtk.Image()
 
-			catagoryIndex[app["catagory"]][catagoryIndexId[app["catagory"]]] = None
-			catagoryIndexId[app["catagory"]] = catagoryIndexId[app["catagory"]] + 1
+		self.Name = Gtk.Label(xalign=0)
+		self.Name.set_markup("<b>" + name + "</b>")
 
-			self.appStackPages[app["id"]] = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-			self.appTopBox[app["id"]] = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-			
-			self.appButton[app["id"]] = Gtk.Button(label="Install", valign=Gtk.Align.CENTER, halign=Gtk.Align.CENTER)
+		self.Description = Gtk.Label(xalign=0.2, label=description)
+		self.Description.set_line_wrap(True)
 
-			self.appTopBox[app["id"]].pack_start(self.Icon[app["id"] + "ForPage"], False, False, 0)
-			self.appTopBox[app["id"]].pack_start(self.Name[app["id"] + "ForPage"], True, True, 0)
-			self.appTopBox[app["id"]].pack_start(self.appButton[app["id"]], False, False, 5)
+		self.packageMenu = Gtk.ComboBoxText(valign=Gtk.Align.CENTER, halign=Gtk.Align.CENTER)
+		if os.path.isfile(BINDIR + "apt") == True and apt != "None":
+			self.packageMenu.append("apt", "apt")
+		elif os.path.isfile(BINDIR + "apk") == True and apk != "None":
+			self.packageMenu.append("apk", "apk")
+		if os.path.isfile(BINDIR + "flatpak") == True and flathub != "None":
+			self.packageMenu.append("flathub", "Flathub")
+		self.packageMenu.set_active(0)
 
-			self.appStackPages[app["id"]].pack_start(self.appTopBox[app["id"]], False, False, 5)
-			self.appStack.add_titled(self.appStackPages[app["id"]], app["id"] + "AppPage", app["name"])
+		self.appStackPage = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+		self.appTopBox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+		self.appLabelAndButtons = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+		self.appButtons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+		self.appButton = Gtk.Button(label="Install", valign=Gtk.Align.CENTER, halign=Gtk.Align.CENTER)
 
+		self.appLabelAndButtons.pack_start(self.Name, True, True, 0)
+		self.appButtons.pack_start(self.packageMenu, False, False, 0)
+		self.appButtons.pack_start(self.appButton, False, False, 10)
+		self.appLabelAndButtons.pack_start(self.appButtons, True, True, 0)
+		self.appTopBox.pack_start(self.Icon, False, False, 0)
+		self.appTopBox.pack_start(self.appLabelAndButtons, True, True, 10)
+
+		self.appStackPage.pack_start(self.appTopBox, False, False, 5)
+		self.appStackPage.pack_start(self.Description, False, False, 5)
+		self.appStack.add_titled(self.appStackPage, id + "AppPage", name)
+
+	def searchData(self, id, name, shortdescription, description):
+		self.data[id] = {}
+		self.data[id]["name"] = name
+		self.data[id]["description"] = description
+		self.data[id]["shortdescription"] = shortdescription
+
+	def visibleStackChanged(self, Event, Stack):
+		self.mainStack.set_visible_child_name("mainPages")
+	
+	def createCatagory(self, catagoryVar, catagoryName):
+		self.catagory[catagoryVar] = Gtk.ListBox()
+		self.catagoryScroll[catagoryVar] = Gtk.ScrolledWindow()
+		self.catagoryScroll[catagoryVar].add(self.catagory[catagoryVar])
+		self.catagoryStack.add_titled(
+			self.catagoryScroll[catagoryVar],
+			catagoryVar + "Page", catagoryName)
+
+		# Add Catagory to List
+		self.catagoryRow[catagoryVar] = Gtk.ListBoxRow()
+		self.catagoryBox[catagoryVar] = Gtk.Box(spacing=1)
+		self.catagoryLabel[catagoryVar] = Gtk.Label()
+		self.catagoryLabel[catagoryVar].set_markup("<b>" + catagoryName + "</b>")
+		self.catagoryLabel[catagoryVar].set_margin_top(12)
+		self.catagoryLabel[catagoryVar].set_margin_bottom(12)
+		self.catagoryRow[catagoryVar].add(self.catagoryLabel[catagoryVar])
+		self.catagoryList.add(self.catagoryRow[catagoryVar])
+		self.catagory[catagoryVar].connect("row-activated", self.appListClicked, catagoryVar)
+
+		self.catagoryIndex["catagory"][self.catagoryIndexId["catagory"]] = catagoryVar + "Page"
+		self.catagoryIndexId["catagory"] = self.catagoryIndexId["catagory"] + 1
+
+		self.catagoryIndex[catagoryVar] = {}
+		self.catagoryIndexId[catagoryVar] = 0
+
+
+	def catagoryListClicked(self, Widget, Event):
+		self.catagoryStack.set_visible_child_name(self.catagoryIndex["catagory"][Event.get_index()])
+		self.backButton.set_sensitive(True)
+	
+	def appListClicked(self, Widget, Event, catagoryVar):
+		self.mainStack.set_visible_child_name("appPages")
+		self.appStack.set_visible_child_name(self.catagoryIndex[catagoryVar][Event.get_index()] + "AppPage")
+		self.backButton.set_sensitive(True)
+
+	def backClicked(self, Button):
+		if self.mainStack.get_visible_child_name() == "appPages":
+			self.mainStack.set_visible_child_name("mainPages")
+		elif self.mainStack.get_visible_child_name() == "mainPages":
+			if self.visibleStack.get_visible_child_name() == "catagoryPage":
+				if self.catagoryStack.get_visible_child_name() != "catagoryPage":
+					self.catagoryStack.set_visible_child_name("catagoryPage")
+					Button.set_sensitive(False)
+
+	def grabbingIcons(self):
+		self.loadingLabel.set_label("Grabbing Icons")
+		self.mainStack.set_visible_child_name("loadingPage")
+
+		if os.path.isdir(APPSTREAMICONDIR) == False:
+			os.makedirs(APPSTREAMICONDIR)
+			subprocess.call(["wget", "https://appstream.debian.org/data/bullseye/main/icons-64x64.tar.gz"])
+			subprocess.call(["tar", "-xf", "icons-64x64.tar.gz", "-C", APPSTREAMICONDIR])
+			os.remove("icons-64x64.tar.gz")
+
+		if os.path.isdir(FLATHUBICONDIR) == False:
+			os.makedirs(FLATHUBICONDIR)
+
+		if os.path.isdir(FALLBACKICONDIR) == False:
+			os.makedirs(FALLBACKICONDIR)
+
+		for app in repo["apps"]:
+			if app["package"][0]["flathub"] != "None" and os.path.isfile(FLATHUBICONDIR + app["package"][0]["flathub"] + ".png") == False:
+				subprocess.call(["wget", "https://dl.flathub.org/repo/appstream/x86_64/icons/64x64/" + app["package"][0]["flathub"] + ".png", "-P", FLATHUBICONDIR])
+			if os.path.isfile(APPSTREAMICONDIR + app["package"][0]["apt"] + ".png") == False and app["package"][0]["flathub"] == "None" and os.path.isfile(FALLBACKICONDIR + app["id"] + ".png") == False:
+				subprocess.call(["wget", app["icon-url"], "-O", FALLBACKICONDIR + app["id"] + ".png"]) 
+
+		self.mainStack.set_visible_child_name("mainPages")
+
+	def installButton(self, Widget, id, apt, apk, flathub, name):
+		self.loadingLabel.set_label("Install " + name)
+		self.mainStack.set_visible_child_name("loadingPage")
+		if self.packageMenu[id].get_active_id() == "flathub":
+			self.installSubprocess = Gio.Subprocess.new(["pkexec", "flatpak", "install", "-y", "flathub", flathub], 0)
+		if self.packageMenu[id].get_active_id() == "apt":
+			self.installSubprocess = Gio.Subprocess.new(["pkexec", "apt", "-y", "install", apt], 0)
+		if self.packageMenu[id].get_active_id() == "apk":
+			self.installSubprocess = Gio.Subprocess.new(["pkexec", "apk", "add", apk], 0)
+		self.installSubprocess.wait_check_async(None, self.installationDone)
+		
+	def installationDone(self, subprocess, result):
+		self.mainStack.set_visible_child_name("mainPages")
+		print(self.installSubprocess.wait_check_finish(result))
+
+	def listBoxItem(self, id, apt, apk, flathub, name, shortdescription, listbox, catagory, icon):
+		self.Box = Gtk.Box(spacing=10)
+		self.VBox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+		
+		if os.path.isfile(APPSTREAMICONDIR + apt + "_" + icon + ".png") == True:
+			self.Icon = Gtk.Image.new_from_file(APPSTREAMICONDIR + apt + "_" + icon + ".png")
+		elif os.path.isfile(FLATHUBICONDIR + flathub + ".png") == True:
+			self.Icon = Gtk.Image.new_from_file(FLATHUBICONDIR + flathub + ".png")
+		elif os.path.isfile(FALLBACKICONDIR + id + ".png") == True:
+			self.IconPixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(FALLBACKICONDIR + id + ".png", width=64, height=64, preserve_aspect_ratio=True)
+			self.Icon = Gtk.Image.new_from_pixbuf(self.IconPixbuf)
+		else: 
+			self.Icon = Gtk.Image()
+
+		self.Name = Gtk.Label(xalign=0)
+		self.Name.set_margin_top(5)
+		self.Name.set_markup("<b>" + name + "</b>")
+		#self.Name[id] + "ForPage"] = Gtk.Label(xalign=0)
+		#self.Name[id] + "ForPage"].set_markup("<b>" + app["name"] + "</b>")
+		# self.Name[app["id"] + "ForPage"].
+
+		self.ShortDescription = Gtk.Label(xalign=0, label=shortdescription)
+
+		self.Box.pack_start(self.Icon, False, False, 0)
+		self.VBox.pack_start(self.Name, False, False, 0)
+		self.VBox.pack_start(self.ShortDescription, False, False, 0)
+		self.Box.pack_start(self.VBox, True, True, 0)
+
+		listbox.add(self.Box)
+
+		self.catagoryIndex[catagory][self.catagoryIndexId[catagory]] = id
+		self.catagoryIndexId[catagory] = self.catagoryIndexId[catagory] + 1
+
+	def search(self, Event):
+		self.catagoryIndexId["searchResults"] = 0
+
+		for child in self.searchResults.get_children():
+			self.id = self.catagoryIndex["search"][self.catagoryIndexId["searchResults"]]
+			if (self.searchEntry.get_text().casefold() in self.data[self.id]["name"].casefold()
+				or self.searchEntry.get_text().casefold() in self.data[self.id]["shortdescription"].casefold()
+				or self.searchEntry.get_text().casefold() in self.data[self.id]["description"].casefold()):
+
+				child.set_visible(True)
+			else: child.set_visible(False)
+
+			self.catagoryIndexId["searchResults"] = self.catagoryIndexId["searchResults"] + 1
 
 mainWindow = lapp()
 mainWindow.connect("delete-event", Gtk.main_quit) # Makes the close button close the Window.
 mainWindow.show_all()
+mainWindow.grabbingIcons()
 Gtk.main()
